@@ -9,61 +9,79 @@
 #import "Chat_ViewController.h"
 
 @interface Chat_ViewController ()
-
+@property (nonatomic,strong) UITableView *myTableView;
+@property (nonatomic,strong) NSDictionary *jsonObject;
+@property (nonatomic,strong) UILabel *textLab;
+@property (nonatomic,strong) UITextField *questTF;
+@property (nonatomic,strong) UIButton *sendBtn;
+@property (nonatomic,strong) NSString *questionStr,*urlString;
+@property (nonatomic,strong) NSMutableArray *dataArr,*timeArr;
+@property (nonatomic,assign) CGSize size,AnSize;
 @end
 
 @implementation Chat_ViewController
 {
-    UITableView *myTableView;
-    NSDictionary *jsonObject;
-    UILabel *textLab;
-    UITextField *questTF;
-    UIButton *sendBtn;
-    NSString *questionStr,*urlString;
-    NSMutableArray *dataArr,*timeArr;
-    CGSize size,AnSize;
+
+
+
+
+
+
+
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self initDataSourse];
+    [self.view addSubview:self.myTableView];
+    [self.view addSubview:self.questTF];
+    [self.view addSubview:self.sendBtn];
     
-
 }
 
 - (void)initDataSourse{
-    dataArr = [NSMutableArray new];
-    timeArr = [NSMutableArray new];
+    _dataArr = [NSMutableArray new];
+    _timeArr = [NSMutableArray new];
     
-    [self initUI];
 }
 
-- (void)initUI{
-    self.title = @"chat with world";
-    myTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, APPwidth, APPheigh-40) style:UITableViewStylePlain];
-    myTableView.delegate = self;
-    myTableView.dataSource = self;
-    myTableView.tableHeaderView.hidden = YES;
-    [self.view addSubview:myTableView];
-    ///
+- (UITableView *)myTableView{
+    if (!_myTableView) {
+        _myTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, APPwidth, APPheigh-40) style:UITableViewStylePlain];
+        _myTableView.delegate = self;
+        _myTableView.dataSource = self;
+        _myTableView.tableHeaderView.hidden = YES;
+        [self.view addSubview:_myTableView];
+    }
+    
+    return _myTableView;
+}
 
-//    textLab.text = jsonObject[@"content"];
+- (UITextField *)questTF{
+    if (!_questTF) {
+        _questTF = [[UITextField alloc]initWithFrame:CGRectMake(20,APPheigh- 89, APPwidth-70, 40)];
+        _questTF.placeholder = @"请输入你的问题？";
+        _questTF.delegate = self;
+        _questTF.borderStyle = UITextBorderStyleRoundedRect;
+        [self.view addSubview:_questTF];
+    }
+    return _questTF;
+}
 
-    //tableBar的高度为 49；
-    questTF = [[UITextField alloc]initWithFrame:CGRectMake(20,APPheigh- 89, APPwidth-70, 40)];
-    questTF.placeholder = @"请输入你的问题？";
-    questTF.delegate = self;
-    questTF.borderStyle = UITextBorderStyleRoundedRect;
-    [self.view addSubview:questTF];
-    //
-    sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(APPwidth-40, APPheigh - 89, 40, 40)];
-    sendBtn.backgroundColor = [UIColor purpleColor];
-    sendBtn.layer.cornerRadius = 20;
-    sendBtn.clipsToBounds = YES;
-    [self.view addSubview:sendBtn];
-    [sendBtn addTarget:self action:@selector(getTextFiled:) forControlEvents:UIControlEventTouchUpInside];
+- (UIButton *)sendBtn{
+    if (!_sendBtn) {
+        _sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(APPwidth-40, APPheigh - 89, 40, 40)];
+        _sendBtn.backgroundColor = [UIColor purpleColor];
+        _sendBtn.layer.cornerRadius = 20;
+        _sendBtn.clipsToBounds = YES;
+        [self.view addSubview:_sendBtn];
+        [_sendBtn addTarget:self action:@selector(getTextFiled:) forControlEvents:UIControlEventTouchUpInside];
+
+    }
+    return _sendBtn;
+    
 }
 - (void)getTextFiled:(UIButton *)btn{
-    [dataArr addObject:questTF.text];
+    [_dataArr addObject:_questTF.text];
 
     [self NetWorkYouCanDo];
 
@@ -76,16 +94,16 @@
     [dateFormatter setDateFormat:@"HH:mm:ss"];
     //NSDate转NSString
     NSString *currentDateString = [dateFormatter stringFromDate:currentDate];
-    [timeArr addObject:currentDateString];
-    NSLog(@"dataArr.count = %lu",(unsigned long)dataArr.count);
-    [myTableView reloadData];
+    [_timeArr addObject:currentDateString];
+    NSLog(@"dataArr.count = %lu",(unsigned long)_dataArr.count);
+    [_myTableView reloadData];
 
     
     
 }
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
     
-    return dataArr.count;
+    return _dataArr.count;
 }
 
 - (UITableViewCell*)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
@@ -97,7 +115,7 @@
             
         }
         cell.headLab.backgroundColor = [UIColor greenColor];
-        cell.headLab.text = [NSString stringWithFormat:@"%@",dataArr[indexPath.row]];
+        cell.headLab.text = [NSString stringWithFormat:@"%@",_dataArr[indexPath.row]];
         cell.headLab.font=[UIFont systemFontOfSize:17];
         NSInteger aint=cell.headLab.text.length;
         NSLog(@"文字 个数位：%lu ",aint);
@@ -105,10 +123,10 @@
 //        cell.headLab.frame = CGRectMake(APPwidth-aint*10, 20, 80 + aint*10, 20+aint*10);
 
         NSString *str=cell.headLab.text;
-        size = [str sizeWithFont:[UIFont systemFontOfSize:16] constrainedToSize:CGSizeMake(APPwidth-80, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
-        cell.headLab.frame=CGRectMake(APPwidth-size.width-20, cell.headLab.frame.origin.y, 10+size.width, 10+size.height);
+        _size = [str sizeWithFont:[UIFont systemFontOfSize:16] constrainedToSize:CGSizeMake(APPwidth-80, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
+        cell.headLab.frame=CGRectMake(APPwidth-_size.width-20, cell.headLab.frame.origin.y, 10+_size.width, 10+_size.height);
         cell.headLab.numberOfLines=0; 
-        cell.timeLab.text = timeArr[indexPath.row];
+        cell.timeLab.text = _timeArr[indexPath.row];
         cell.selectionStyle = UITableViewCellStyleDefault;
 
         return cell;
@@ -124,11 +142,11 @@
         }
         NSLog(@"%ld",indexPath.row %2);
         robotCell.headLab.backgroundColor = [UIColor orangeColor];
-        robotCell.headLab.text = dataArr[indexPath.row];
+        robotCell.headLab.text = _dataArr[indexPath.row];
         NSString *AnStr=robotCell.headLab.text;
-        AnSize = [AnStr sizeWithFont:[UIFont systemFontOfSize:17] constrainedToSize:CGSizeMake(APPwidth -80, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
+        _AnSize = [AnStr sizeWithFont:[UIFont systemFontOfSize:17] constrainedToSize:CGSizeMake(APPwidth -80, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
   
-        robotCell.headLab.frame=CGRectMake(20, robotCell.headLab.frame.origin.y, 10+AnSize.width, 10+AnSize.height);
+        robotCell.headLab.frame=CGRectMake(20, robotCell.headLab.frame.origin.y, 10+_AnSize.width, 10+_AnSize.height);
 
 
         robotCell.selectionStyle = UITableViewCellStyleDefault;
@@ -146,10 +164,10 @@
 //   NSString * str = [NSString stringWithFormat:@"%@%ld",dataArr[indexPath.row],indexPath.row/2];
 //    size = [str sizeWithFont:[UIFont systemFontOfSize:17] constrainedToSize:CGSizeMake(APPwidth-80, CGFLOAT_MAX) lineBreakMode:NSLineBreakByWordWrapping];
     if (indexPath.row %2  == 0) {
-        return 60+size.height;
+        return 60+_size.height;
 
     }else{
-        return 60+AnSize.height;
+        return 60+_AnSize.height;
         
     }
     
@@ -165,15 +183,15 @@
 
 
 - (void)NetWorkYouCanDo{
-    questionStr = questTF.text;
-    if (questionStr == nil) {
-        questionStr = [[NSString alloc]init];
-        questionStr =@"很高兴认识你！";
+    _questionStr = _questTF.text;
+    if (_questionStr == nil) {
+        _questionStr = [[NSString alloc]init];
+        _questionStr =@"很高兴认识你！";
         
     }
-    urlString =[NSString stringWithFormat:@"%@%@",@"http://api.jisuapi.com/iqa/query?appkey=e26389d5cf19ac83&question=",questionStr] ;
+    _urlString =[NSString stringWithFormat:@"%@%@",@"http://api.jisuapi.com/iqa/query?appkey=e26389d5cf19ac83&question=",_questionStr] ;
     
-    [[MyHttPReusest alloc] getHttpRequest:urlString key:@"robot"];
+    [[MyHttPReusest alloc] getHttpRequest:_urlString key:@"robot"];
     [[NSNotificationCenter defaultCenter]addObserver:self selector:@selector(getJsonObjectForNetWork4:) name:@"robot" object:nil];
     
     
@@ -181,9 +199,9 @@
 
 - (void)getJsonObjectForNetWork4:(NSNotification *)notification{
     //    NSLog(@"%@",notification.userInfo[@"result"]);
-    jsonObject = notification.userInfo[@"result"];
-    NSLog(@"%@",jsonObject[@"content"]);
-    [dataArr addObject:jsonObject[@"content"]];
+    _jsonObject = notification.userInfo[@"result"];
+    NSLog(@"%@",_jsonObject[@"content"]);
+    [_dataArr addObject:_jsonObject[@"content"]];
     //获取系统当前时间
     NSDate *currentDate = [NSDate date];
     //用于格式化NSDate对象
@@ -193,12 +211,37 @@
     [dateFormatter setDateFormat:@"HH:mm:ss"];
     //NSDate转NSString
     NSString *currentDateString = [dateFormatter stringFromDate:currentDate];
-    [timeArr addObject:currentDateString];[myTableView reloadData];
+    [_timeArr addObject:currentDateString];[_myTableView reloadData];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
     //滚动到tableview的任意一行
-    [myTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:dataArr.count -1 inSection:0]atScrollPosition:UITableViewScrollPositionTop animated:YES];
+    [_myTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:_dataArr.count -1 inSection:0]atScrollPosition:UITableViewScrollPositionTop animated:YES];
 }
 
+- (void)initUI{
+    self.title = @"chat with world";
+    _myTableView = [[UITableView alloc]initWithFrame:CGRectMake(0, 0, APPwidth, APPheigh-40) style:UITableViewStylePlain];
+    _myTableView.delegate = self;
+    _myTableView.dataSource = self;
+    _myTableView.tableHeaderView.hidden = YES;
+    [self.view addSubview:_myTableView];
+    ///
+    
+    //    textLab.text = jsonObject[@"content"];
+    
+    //tableBar的高度为 49；
+    _questTF = [[UITextField alloc]initWithFrame:CGRectMake(20,APPheigh- 89, APPwidth-70, 40)];
+    _questTF.placeholder = @"请输入你的问题？";
+    _questTF.delegate = self;
+    _questTF.borderStyle = UITextBorderStyleRoundedRect;
+    [self.view addSubview:_questTF];
+    //
+    _sendBtn = [[UIButton alloc]initWithFrame:CGRectMake(APPwidth-40, APPheigh - 89, 40, 40)];
+    _sendBtn.backgroundColor = [UIColor purpleColor];
+    _sendBtn.layer.cornerRadius = 20;
+    _sendBtn.clipsToBounds = YES;
+    [self.view addSubview:_sendBtn];
+    [_sendBtn addTarget:self action:@selector(getTextFiled:) forControlEvents:UIControlEventTouchUpInside];
+}
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
